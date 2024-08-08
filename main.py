@@ -15,8 +15,9 @@ def main(work_type_args):
         Trainer(config).train()
 
     elif work_type_args.type == 'sample':
-        from sampler import Sampler
-        Sampler(config).sample()
+        from sampler import Sampler, Sampler_DPS
+        # Sampler(config).sample()
+        Sampler_DPS(config).sample()
 
     else:
         raise ValueError(f'Wrong type {work_type_args.type}')

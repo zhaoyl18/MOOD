@@ -61,6 +61,44 @@ def evaluate(protein, csv_dir, smiles, mols=None):
     return {'validity': validity, 'uniqueness': uniqueness,
             'novelty': novelty, 'top_ds': top_ds, 'hit': hit}
 
+def evaluate_qed_sa(csv_dir, smiles, mols=None):
+    df = pd.DataFrame()
+    num_mols = len(smiles)
+
+    # remove empty molecules
+    while True:
+        if '' in smiles:
+            idx = smiles.index('')
+            del smiles[idx]
+            if mols is not None:
+                del mols[idx]
+        else:
+            break
+    df['smiles'] = smiles
+    validity = len(df) / num_mols
+
+    if mols is None:
+        df['mol'] = [Chem.MolFromSmiles(s) for s in smiles]
+    else:
+        df['mol'] = mols
+
+    uniqueness = len(set(df['smiles'])) / len(df)
+    get_novelty_in_df(df)
+    novelty = len(df[df['sim'] < 0.4]) / len(df)
+
+    df = df.drop_duplicates(subset=['smiles'])
+
+    # df[protein] = get_scores(protein, df['mol'])
+    df['qed'] = get_scores('qed', df['mol'])
+    df['sa'] = get_scores('sa', df['mol'])
+
+    del df['mol']
+    df.to_csv(f'{csv_dir}.csv', index=False)
+    
+    return {'validity': validity, 'uniqueness': uniqueness,
+            'novelty': novelty, 'qed-mean': df['qed'].mean(), 'qed-std': df['qed'].std(), 
+            'sa-mean': df['sa'].mean(), 'sa-std': df['sa'].std()}
+
 
 def evaluate_baseline(df, csv_dir, protein):
     from moses.utils import get_mol

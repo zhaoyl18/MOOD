@@ -50,8 +50,14 @@ class MolDataset_prop(Dataset):
         elif '5ht1b' in prop: protein = '5ht1b'
         elif 'jak2' in prop: protein = 'jak2'
         elif 'braf' in prop: protein = 'braf'
-
-        self.y = np.clip(df[protein], 0., 20.) / 20.0
+        else:
+            protein = 'none'
+        
+        if protein == 'none':
+            self.y = np.clip(df['qed'], 1.0, 1.0)
+        else:    
+            self.y = np.clip(df[protein], 0., 20.) / 20.0
+        
         if 'qed' in prop:
             self.y *= df['qed']
         if 'sa' in prop:
