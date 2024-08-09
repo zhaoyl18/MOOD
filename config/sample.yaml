@@ -12,7 +12,7 @@ model:
     n_steps: 1
   prop:
     ckpt: qed        # qed or sa
-    weight_x: 0.3   # qed: 0.3 - 0.4   sa: probably 0.1 (any way is worse than pre-trained)
+    weight_x: 0.3   # qed: 0.3 - 0.4   sa: probably 0.1 (any value is worse than pre-trained...)
     weight_adj: 0
     DPS: True
 
