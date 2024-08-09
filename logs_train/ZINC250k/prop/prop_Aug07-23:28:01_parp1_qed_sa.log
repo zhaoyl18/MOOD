@@ -1,0 +1,46 @@
+----------------------------------------------------------------------------------------------------
+Aug07-23:28:01
+----------------------------------------------------------------------------------------------------
+[ZINC250k] seed=42 batch_size=1024
+----------------------------------------------------------------------------------------------------
+(X:VP)=(0.10, 1.00) N=1000 (A:VE)=(0.20, 1.00) N=1000
+(Regressor): depth=3 nhid=16 dropout=0
+----------------------------------------------------------------------------------------------------
+Regressor(
+  (linears): ModuleList(
+    (0): Linear(in_features=9, out_features=16, bias=True)
+    (1): Linear(in_features=16, out_features=16, bias=True)
+    (2): Linear(in_features=16, out_features=16, bias=True)
+  )
+  (convs): ModuleList(
+    (0): DenseGCNConv(16, 16)
+    (1): DenseGCNConv(16, 16)
+    (2): DenseGCNConv(16, 16)
+  )
+  (sigmoid_linear): Sequential(
+    (0): Linear(in_features=57, out_features=16, bias=True)
+    (1): Sigmoid()
+  )
+  (tanh_linear): Sequential(
+    (0): Linear(in_features=57, out_features=16, bias=True)
+    (1): Tanh()
+  )
+  (final_linear): Sequential(
+    (0): Linear(in_features=16, out_features=16, bias=True)
+    (1): ReLU()
+    (2): Dropout(p=0, inplace=False)
+    (3): Linear(in_features=16, out_features=1, bias=True)
+    (4): Sigmoid()
+  )
+)
+----------------------------------------------------------------------------------------------------
+Epoch: 001 | 105.40s | TRAIN loss: 8.0623e-03 | TRAIN corr: -0.1242 | TEST loss: 3.9741e-03 | TEST corr: -0.1301
+Epoch: 002 | 104.29s | TRAIN loss: 3.8225e-03 | TRAIN corr: 0.0817 | TEST loss: 3.4184e-03 | TEST corr: 0.3644
+Epoch: 003 | 105.16s | TRAIN loss: 3.3924e-03 | TRAIN corr: 0.3854 | TEST loss: 3.3290e-03 | TEST corr: 0.3953
+Epoch: 004 | 104.74s | TRAIN loss: 3.3407e-03 | TRAIN corr: 0.4001 | TEST loss: 3.2823e-03 | TEST corr: 0.4099
+Epoch: 005 | 104.77s | TRAIN loss: 3.2811e-03 | TRAIN corr: 0.4193 | TEST loss: 3.2212e-03 | TEST corr: 0.4366
+Epoch: 006 | 105.52s | TRAIN loss: 3.2304e-03 | TRAIN corr: 0.4361 | TEST loss: 3.1765e-03 | TEST corr: 0.4458
+Epoch: 007 | 105.87s | TRAIN loss: 3.1905e-03 | TRAIN corr: 0.4468 | TEST loss: 3.1246e-03 | TEST corr: 0.4569
+Epoch: 008 | 106.04s | TRAIN loss: 3.1615e-03 | TRAIN corr: 0.4544 | TEST loss: 3.0968e-03 | TEST corr: 0.4605
+Epoch: 009 | 105.93s | TRAIN loss: 3.1436e-03 | TRAIN corr: 0.4587 | TEST loss: 3.0869e-03 | TEST corr: 0.4647
+Epoch: 010 | 106.03s | TRAIN loss: 3.1366e-03 | TRAIN corr: 0.4613 | TEST loss: 3.0806e-03 | TEST corr: 0.4675

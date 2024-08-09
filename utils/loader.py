@@ -123,7 +123,7 @@ def load_sampling_fn(config_train, config_module, config_classifier,
                               snr=snr, scale_eps=scale_eps, n_steps=config_module.n_steps,
                               probability_flow=config_sample.probability_flow,
                               continuous=True, denoise=config_sample.noise_removal,
-                              eps=config_sample.eps, device=f'cuda:{device[0]}', ood=config_sample.ood)
+                              eps=config_sample.eps, device=f'cuda:{device[0]}', ood=config_sample.ood, DPS=config_classifier.DPS)
     return sampling_fn
 
 

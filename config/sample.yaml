@@ -11,9 +11,10 @@ model:
     scale_eps: 0.8
     n_steps: 1
   prop:
-    ckpt: sa
-    weight_x: 0.5   # 0.5, 0.4, 0.6, 0.7, and 0.6 for parp1, fa7, 5ht1b, braf, and jak2, respectively
+    ckpt: qed        # qed or sa
+    weight_x: 0.3   # qed: 0.3 - 0.4   sa: probably 0.1 (any way is worse than pre-trained)
     weight_adj: 0
+    DPS: True
 
 sample:
   noise_removal: True

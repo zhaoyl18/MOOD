@@ -117,8 +117,8 @@ class LangevinCorrector(Corrector):
     seps = self.scale_eps
 
     if isinstance(sde, VPSDE) or isinstance(sde, subVPSDE):
-      timestep = (t * (sde.N - 1) / sde.T).long()
-      alpha = sde.alphas.to(t.device)[timestep]
+      timestep = (t * (sde.N - 1) / sde.T).long()  # sde.N = 1000, sde.T = 1
+      alpha = sde.alphas.to(t.device)[timestep]    # alpha: [3000,], sde.alphas: [1000,], max 0.9999, min 0.9990 
     else:
       alpha = torch.ones_like(t)
 
@@ -155,16 +155,16 @@ def get_pc_sampler(sde_x, sde_adj, shape_x, shape_adj,
                    predictor='Euler', corrector='Langevin', 
                    snr=0.1, scale_eps=1.0, sampling_steps=1,
                    n_steps=1, probability_flow=False, continuous=False,
-                   denoise=True, eps=1e-3, device='cuda', ood=0):
+                   denoise=True, eps=1e-3, device='cuda', ood=0, DPS=False):
 
   from models.regressor import RegressorScoreX, RegressorScoreAdj
 
   def weight_scheduling_fn(weight, t):
     return weight * 0.1 ** t
   
-  def total_grad_fn(score_fn, regressor_grad_fn, obj='X'):
+  def total_grad_fn(score_fn, regressor_grad_fn, obj='X', DPS=False, sde_x=None):
     def total_grad(x, adj, flags, t):
-      score = score_fn(x, adj, flags, t)
+      # score = score_fn(x, adj, flags, t)
 
       if obj == 'X':
         weight = weight_x
@@ -172,8 +172,26 @@ def get_pc_sampler(sde_x, sde_adj, shape_x, shape_adj,
         weight = weight_adj
 
       if weight:
-        prop_grad = regressor_grad_fn(x, adj, flags, t)
+        if DPS and obj == 'X':
+          timestep = (t * (sde_x.N - 1) / sde_x.T).long()  # sde.N = 1000, sde.T = 1
+          sqrt_alpha_cumprod = sde_x.sqrt_alphas_cumprod.to(t.device)[timestep]    # \sqrt{\bar{alpha_t}}
+          sqrt_1m_alpha_cumprod = sde_x.sqrt_1m_alphas_cumprod.to(t.device)[timestep]  # \sqrt{1-\bar{alpha_t}}
+
+          with torch.enable_grad():
+            x_para = torch.nn.Parameter(x)
+            score = score_fn(x_para, adj, flags, t)
+            x_0 = (1. / sqrt_alpha_cumprod).view(-1, 1, 1)*(x_para + torch.square(sqrt_1m_alpha_cumprod).view(-1, 1, 1)*score)  # tweedie's formula
+            
+            F = regressor_grad_fn.regressor(x_0, adj, flags, t).sum()
+            F.backward()
+            prop_grad = x_para.grad
+            prop_grad = mask_x(prop_grad, flags)           
+          
+        else:
+          score = score_fn(x, adj, flags, t)
+          prop_grad = regressor_grad_fn(x, adj, flags, t)
       else:
+        score = score_fn(x, adj, flags, t)
         prop_grad = torch.zeros_like(score, device='cuda')
       
       weight_scheduled = weight_scheduling_fn(weight, t[0].item())
@@ -198,7 +216,7 @@ def get_pc_sampler(sde_x, sde_adj, shape_x, shape_adj,
     score_fn_x = get_score_fn(sde_x, model_x, train=False, continuous=continuous)
     score_fn_adj = get_score_fn(sde_adj, model_adj, train=False, continuous=continuous)
     
-    score_fn_x_t = total_grad_fn(score_fn_x, RegressorScoreX(sde_x, regressor), 'X')
+    score_fn_x_t = total_grad_fn(score_fn_x, RegressorScoreX(sde_x, regressor), 'X', DPS=DPS, sde_x=sde_x)
     score_fn_adj_t = total_grad_fn(score_fn_adj, RegressorScoreAdj(sde_adj, regressor), 'A')
 
     predictor_fn = ReverseDiffusionPredictor if predictor=='Reverse' else EulerMaruyamaPredictor
