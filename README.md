@@ -20,8 +20,9 @@ python data/preprocess.py
 
 It is worthnoting that all QED and SA scores reported here are in `0 ~ 1`. Specially, SA score is normalized with 
 
-$$SA = \frac{10 - rdkit\_SA}{9}$$
- where $rdkit\_SA$ ranges from $1$ to $10$ with $1$ being easy to make and $10$ being hard to make. In conclusion, we aim to obtain bigger numbers for both QED and SA scores.
+$$\frac{10 - SA}{9}$$
+
+ where $SA$ is computed from RDKit and it ranges from $1$ to $10$ with $1$ being easy to make and $10$ being hard to make. In conclusion, we aim to obtain bigger numbers for both QED and SA scores.
 
 ## Sampling 
 
